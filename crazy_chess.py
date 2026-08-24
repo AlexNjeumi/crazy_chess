@@ -1,11 +1,13 @@
 import pygame
 import sys
 import copy
+import os
 import random
 from moves import get_legal_moves, get_raw_moves, make_move, has_any_legal_move, find_king, opposite, is_in_check
 pygame.init()
 from apply_effect import apply_effect
-from setup import WHITE_FILL,WHITE_TEXT, WIDTH,PANEL_WIDTH,HEIGHT,STATUS_HEIGHT, BG_STATUS,BLACK_FILL,BLACK_TEXT,BOARD_SIZE, SELECT_COLOR,SQ,STATUS_TEXT, FPS, LIGHT, DARK,MOVE_DOT_COLOR
+from setup import WHITE_FILL,WHITE_TEXT, WIDTH,PANEL_WIDTH,HEIGHT,STATUS_HEIGHT, BG_STATUS,BLACK_FILL,BLACK_TEXT,BOARD_SIZE, SELECT_COLOR,SQ,STATUS_TEXT, FPS, LIGHT, DARK,MOVE_DOT_COLOR, CAPTURE_RING, FROZEN_COLOR
+
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Chess")
@@ -16,18 +18,58 @@ status_font = pygame.font.SysFont("arial", 22, bold=True)
 LETTERS = {'p': 'P', 'n': 'N', 'b': 'B', 'r': 'R', 'q': 'Q', 'k': 'K'}
 
 EFFECTS = [
-    "Teleport",
-    "Fireball",
     "Shield",
+    "Double Move",
+    "Double Move",
     "Double Move",
     "Freeze",
     "Freeze",
     "Freeze",
     "Freeze",
-    "Swap",
     "Heal",
 ]
+
+future_effect = ['Warp', 'No Cowards', 'Time Bomb', 'Swap', 'Frenzy', 'Magnet', 'Serial Killer']
 selected_effects = random.sample(EFFECTS, 3)
+
+ICON_SIZE = 40
+
+EFFECT_ICONS = {}
+for filename in os.listdir("effect_icons"):
+    if filename.endswith(".png"):
+        effect_name = os.path.splitext(filename)[0].lower()
+        effect_name = effect_name.replace('_', ' ')
+
+        image = pygame.image.load(
+            os.path.join("effect_icons", filename)
+        ).convert_alpha()
+
+        image = pygame.transform.smoothscale(
+            image,
+            (ICON_SIZE, ICON_SIZE)
+        )
+
+        EFFECT_ICONS[effect_name] = image
+        print('Loaded ', effect_name.capitalize())
+
+PIECE_ICONS = {}
+t = { 'rook' : 'r', 'pawn' : 'p', 'king' : 'k', 'knight' : 'n', 'bishop' : 'b', 'queen' : 'q'}
+
+for filename in os.listdir("piece_icons"):
+    if filename.endswith(".png"):
+        piece_name = os.path.splitext(filename)[0].lower()
+        piece_name = piece_name.replace('_', ' ')
+
+        image = pygame.image.load(
+            os.path.join("piece_icons", filename)
+        ).convert_alpha()
+
+        image = pygame.transform.smoothscale(
+            image,
+            (ICON_SIZE, ICON_SIZE)
+        )
+        PIECE_ICONS[t[piece_name]] = image
+        print('Loaded ', piece_name.capitalize())
 
 def draw_effect_panel(effects, selected_effect):
     panel_x = BOARD_SIZE
@@ -57,31 +99,35 @@ def draw_effect_panel(effects, selected_effect):
 
         button_y = start_y + i * (button_height + gap)
 
-        if effect == selected_effect:
-            button_color = (100, 150, 100)
-        else:
-            button_color = (70, 70, 70)
-
         pygame.draw.rect(
             screen,
-            button_color,
+            (70, 70, 70),
             (button_x, button_y, button_width, button_height),
             border_radius=10
         )
 
-        pygame.draw.rect(
-            screen,
-            (180, 180, 180),
-            (button_x, button_y, button_width, button_height),
-            2,
-            border_radius=10
-        )
+        # Get icon
+        icon = EFFECT_ICONS.get(effect.lower())
 
-        text = status_font.render(effect, True, (255, 255, 255))
+        if icon is not None:
+
+            icon_rect = icon.get_rect(
+                midleft=(button_x + 10,
+                        button_y + button_height // 2)
+            )
+
+            screen.blit(icon, icon_rect)
+
+        # Effect name
+        text = status_font.render(
+            effect,
+            True,
+            (255, 255, 255)
+        )
 
         text_rect = text.get_rect(
-            center=(
-                button_x + button_width // 2,
+            midleft=(
+                button_x + 60,
                 button_y + button_height // 2
             )
         )
@@ -148,8 +194,18 @@ def draw_board(
                 text_color = WHITE_TEXT if p.team == 'w' else BLACK_TEXT
                 pygame.draw.circle(screen, fill, center, SQ // 2 - 6)
                 pygame.draw.circle(screen, (0, 0, 0), center, SQ // 2 - 6, 2)
-                label = piece_font.render(LETTERS[p.type], True, text_color)
-                screen.blit(label, label.get_rect(center=center))
+                icon = PIECE_ICONS.get(p.type.lower())
+                
+                if icon is not None:
+        
+                    icon_rect = icon.get_rect(
+                        center=(col * SQ + SQ // 2 ,
+                                row * SQ + SQ // 2)
+                    )
+        
+                    screen.blit(icon, icon_rect)
+                # label = piece_font.render(LETTERS[p.type], True, text_color)
+                # screen.blit(label, label.get_rect(center=center))
 
     pygame.draw.rect(screen, BG_STATUS, (0, BOARD_SIZE, WIDTH, STATUS_HEIGHT))
     turn_text = "White" if turn == 'w' else "Black"
@@ -167,11 +223,12 @@ def main():
     game_over = False
     status_msg = ""
 
-    effects = random.sample(EFFECTS, 3)
     selected_effect = None
+    effects = random.sample(EFFECTS, 3)
 
     running = True
     while running:
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -247,6 +304,8 @@ def main():
                             
                             
                             turn = opposite(turn) if selected_effect != 'Double Move' else turn
+                            effects = random.sample(EFFECTS, 3)
+                            selected_effect = None
                             selected = None
                             legal_moves = []
 
