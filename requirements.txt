@@ -1,0 +1,5 @@
+fastapi==0.135.1
+FastAPI-SQLAlchemy==0.2.1
+alembic==1.16.5
+pydantic-settings==2.11.0
+pgvector==0.2.5

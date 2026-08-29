@@ -1,4 +1,6 @@
 import pygame
+from app.services.setup import WHITE_FILL,WHITE_TEXT, WIDTH,PANEL_WIDTH,HEIGHT,STATUS_HEIGHT, BG_STATUS,BLACK_FILL,BLACK_TEXT,BOARD_SIZE, SELECT_COLOR,SQ,STATUS_TEXT, FPS, LIGHT, DARK,MOVE_DOT_COLOR, CAPTURE_RING, FROZEN_COLOR
+
 def draw_effect_panel(effects, selected_effect):
     panel_x = BOARD_SIZE
 

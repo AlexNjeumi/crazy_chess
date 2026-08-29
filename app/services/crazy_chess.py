@@ -3,10 +3,10 @@ import sys
 import copy
 import os
 import random
-from moves import get_legal_moves, get_raw_moves, make_move, has_any_legal_move, find_king, opposite, is_in_check
+from app.services.moves import get_legal_moves, get_raw_moves, make_move, has_any_legal_move, find_king, opposite, is_in_check
 pygame.init()
-from apply_effect import apply_effect
-from setup import WHITE_FILL,WHITE_TEXT, WIDTH,PANEL_WIDTH,HEIGHT,STATUS_HEIGHT, BG_STATUS,BLACK_FILL,BLACK_TEXT,BOARD_SIZE, SELECT_COLOR,SQ,STATUS_TEXT, FPS, LIGHT, DARK,MOVE_DOT_COLOR, CAPTURE_RING, FROZEN_COLOR
+from app.services.apply_effect import apply_effect
+from app.services.setup import WHITE_FILL,WHITE_TEXT, WIDTH,PANEL_WIDTH,HEIGHT,STATUS_HEIGHT, BG_STATUS,BLACK_FILL,BLACK_TEXT,BOARD_SIZE, SELECT_COLOR,SQ,STATUS_TEXT, FPS, LIGHT, DARK,MOVE_DOT_COLOR, CAPTURE_RING, FROZEN_COLOR
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
