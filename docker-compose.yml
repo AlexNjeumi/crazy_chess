@@ -1,7 +1,7 @@
 services:
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: postgres-radicle
+    container_name: postgres-chess
     restart: always
     hostname: postgres
     environment:
