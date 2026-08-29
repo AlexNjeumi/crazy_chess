@@ -1,4 +1,5 @@
-import random   
+import random
+from select import select   
 
 EFFECTS = [
     "Shield",
@@ -15,5 +16,11 @@ EFFECTS = [
 
 future_effects = ['Warp', 'No Cowards', 'Time Bomb', 'Swap', 'Frenzy', 'Magnet', 'Serial Killer']
 
-def get_random_effects(num=3):
-    return random.sample(EFFECTS, num)
+from db.schemas import Game
+async def get_random_effects(db_session, id , num=3):
+
+    stmt = select(Game).where(Game.id == id)
+    result = await db_session.execute(stmt)
+    game = result.scalar_one_or_none()
+
+    return random.sample(game.effects, game.num_effects) if game else []
