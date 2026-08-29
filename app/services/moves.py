@@ -1,8 +1,8 @@
 import copy
 
-def in_bounds(pos):
+def in_bounds(pos, rows = 8, cols = 8):
     x, y = pos
-    return 0 <= x < 8 and 0 <= y < 8
+    return 0 <= x < cols and 0 <= y < rows
 
 
 def opposite(team):
@@ -10,17 +10,17 @@ def opposite(team):
 
 
 
-def pawn_attack_squares(x, y, team):
+def pawn_attack_squares(x, y, team, rows = 8, cols = 8):
     direction = -1 if team == 'w' else 1
     attacks = []
     for dx in (-1, 1):
         nx, ny = x + dx, y + direction
-        if in_bounds((nx, ny)):
+        if in_bounds((nx, ny), rows, cols):
             attacks.append((nx, ny))
     return attacks
 
 
-def get_raw_moves(board, x, y):
+def get_raw_moves(board, x, y, rows = 8, cols = 8):
     """Pseudo-legal moves: obeys piece movement + blocking, ignores checks."""
     piece = board[y][x]
     if piece is None:
@@ -39,7 +39,7 @@ def get_raw_moves(board, x, y):
             if y == start_row and board[ny2][x] is None:
                 moves.append((x, ny2))
 
-        for (ax, ay) in pawn_attack_squares(x, y, team):
+        for (ax, ay) in pawn_attack_squares(x, y, team, rows, cols):
             target = board[ay][ax]
             if target is not None and target.team != team:
                 moves.append((ax, ay))
@@ -49,7 +49,7 @@ def get_raw_moves(board, x, y):
                   (1, -2), (2, -1), (-1, -2), (-2, -1)]
         for dx, dy in deltas:
             nx, ny = x + dx, y + dy
-            if in_bounds((nx, ny)):
+            if in_bounds((nx, ny), rows, cols):
                 target = board[ny][nx]
                 if target is None or target.team != team:
                     moves.append((nx, ny))
@@ -62,7 +62,7 @@ def get_raw_moves(board, x, y):
             directions += [(1, 1), (1, -1), (-1, 1), (-1, -1)]
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
-            while in_bounds((nx, ny)):
+            while in_bounds((nx, ny), rows, cols):
                 target = board[ny][nx]
                 if target is None:
                     moves.append((nx, ny))
@@ -79,7 +79,7 @@ def get_raw_moves(board, x, y):
                 if dx == 0 and dy == 0:
                     continue
                 nx, ny = x + dx, y + dy
-                if in_bounds((nx, ny)):
+                if in_bounds((nx, ny), rows, cols):
                     target = board[ny][nx]
                     if target is None or target.team != team:
                         moves.append((nx, ny))
@@ -88,7 +88,7 @@ def get_raw_moves(board, x, y):
     return moves
 
 
-def get_legal_moves(board, x, y):
+def get_legal_moves(board, x, y, rows = 8, cols = 8):
     piece = board[y][x]
 
    
@@ -104,14 +104,14 @@ def get_legal_moves(board, x, y):
         moved_piece = test_board[y][x]
         test_board[ny][nx] = moved_piece
         test_board[y][x] = None
-        if not is_in_check(test_board, piece.team):
+        if not is_in_check(test_board, piece.team, rows, cols):
             legal.append((nx, ny))
     return legal
 
 
-def has_any_legal_move(board, team):
-    for y in range(8):
-        for x in range(8):
+def has_any_legal_move(board, team, rows = 8, cols = 8):
+    for y in range(rows):
+        for x in range(cols):
             p = board[y][x]
             if p is not None and p.team == team:
                 if get_legal_moves(board, x, y):
@@ -131,18 +131,18 @@ def make_move(board, old_pos, new_pos):
 
 
 
-def find_king(board, team):
-    for y in range(8):
-        for x in range(8):
+def find_king(board, team, rows = 8, cols = 8):
+    for y in range(rows):
+        for x in range(cols):
             p = board[y][x]
             if p is not None and p.type == 'k' and p.team == team:
                 return (x, y)
     return None
 
 
-def is_square_attacked(board, pos, by_team):
-    for y in range(8):
-        for x in range(8):
+def is_square_attacked(board, pos, by_team, rows = 8, cols = 8):
+    for y in range(rows):
+        for x in range(cols):
             p = board[y][x]
             if p is not None and p.team == by_team:
                 if p.type == 'p':
@@ -154,9 +154,9 @@ def is_square_attacked(board, pos, by_team):
     return False
 
 
-def is_in_check(board, team):
-    king_pos = find_king(board, team)
+def is_in_check(board, team, rows = 8, cols = 8):
+    king_pos = find_king(board, team, rows, cols)
     if king_pos is None:
         return False
-    return is_square_attacked(board, king_pos, opposite(team))
+    return is_square_attacked(board, king_pos, opposite(team), rows, cols)
 

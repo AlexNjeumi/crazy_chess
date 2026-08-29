@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import Boolean, Column, Integer, String, DateTime, Float, ForeignKey, Index, UniqueConstraint, text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -13,7 +13,8 @@ class Games(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     board_state: Mapped[JSONB] = mapped_column(JSONB, nullable=False)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    
+    effects: Mapped[List[str]] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=text("now()"))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), onupdate=datetime.utcnow, server_default=text("now()"))
