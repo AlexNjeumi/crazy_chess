@@ -7,7 +7,6 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.config.settings import settings
 from app.endpoint import router
-from scripts.init_users import init_users
 
 logging.basicConfig(
     level=logging.INFO,
@@ -53,7 +52,6 @@ async def lifespan(app: FastAPI):
         async with SessionLocal() as db_session:
             try:
                 await db_session.execute(text("SELECT 1"))
-                await init_users(db_session)
                 print("Database Connection successful !")
             except Exception as e:
                 print("FATAL ERROR : Database Connection failed! : \n", e)
