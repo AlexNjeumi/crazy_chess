@@ -2,11 +2,13 @@
 FROM python:3.14
 
 
-WORKDIR /code
+WORKDIR /home/app
 
 
 COPY ./requirements.txt /code/requirements.txt
-
+COPY ./alembic ./alembic
+COPY ./db ./db
+COPY ./scripts ./scripts
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
