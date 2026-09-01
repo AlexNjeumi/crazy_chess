@@ -21,10 +21,6 @@ COPY ./db ./db
 COPY ./scripts ./scripts
 COPY ./app ./app
 
-# 3. Complete environment installation (installs your project package if pyproject.toml defines one)
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
-
 EXPOSE 8000
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
