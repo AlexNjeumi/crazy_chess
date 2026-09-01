@@ -17,9 +17,9 @@ router = APIRouter(prefix="/api/crazy-chess", tags=["crazy-chess"])
 
 
 @router.post("/new-game")
-async def new_game(effects: list[str] = Form(...), num_effects: int = Form(...), db_session: AsyncSession = Depends(get_db_session)):
+async def new_game(effects: list[str] = Form(...),rows: int = Form(...),columns: int = Form(...), num_effects: int = Form(...), db_session: AsyncSession = Depends(get_db_session)):
 
-    board = create_board()
+    board = create_board(rows, columns)
     new_game = Game(board_state=board, effects=effects, num_effects=num_effects)
     db_session.add(new_game)
     await db_session.commit()
@@ -28,14 +28,14 @@ async def new_game(effects: list[str] = Form(...), num_effects: int = Form(...),
     return {"game_id": new_game.id, "board_state": new_game.board_state, "effects": await get_random_effects(db_session, new_game.id, num_effects)}
 
 @router.get("/get-effects")
-async def get_effects(game_id: int = Form(...), db_session: AsyncSession = Depends(get_db_session)):
+async def get_effects(game_id: int = Query(...), db_session: AsyncSession = Depends(get_db_session)):
 
     selected_effects = await get_random_effects(db_session, game_id)
     return selected_effects
 
 
 @router.get("/legal-moves")
-async def legal_moves(game_id: int = Form(...), position: tuple = Form(...), db_session: AsyncSession = Depends(get_db_session)):
+async def legal_moves(game_id: int = Query(...), position: tuple = Query(...), db_session: AsyncSession = Depends(get_db_session)):
 
     board_state = await get_board_state(game_id, db_session)
     if board_state is None:
@@ -45,7 +45,7 @@ async def legal_moves(game_id: int = Form(...), position: tuple = Form(...), db_
 
 
 @router.get("/get-board-state")
-async def get_board_state(game_id: int = Form(...), db_session: AsyncSession = Depends(get_db_session)):
+async def get_board_state(game_id: int = Query(...), db_session: AsyncSession = Depends(get_db_session)):
     from app.services.get_board_state import get_board_state
     board_state = await get_board_state(game_id, db_session)
     if board_state is None:

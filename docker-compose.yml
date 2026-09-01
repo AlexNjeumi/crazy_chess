@@ -22,7 +22,7 @@ services:
       - ./scripts:/home/app/scripts
       - ./alembic:/home/app/alembic
     ports:
-      - "8080:8080"
+      - "8000:8000"
     environment:
       FASTAPI_WORKERS: 2
     env_file:
