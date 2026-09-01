@@ -15,17 +15,26 @@ from app.services.moves import get_legal_moves
 from db.schemas import Game
 router = APIRouter(prefix="/api/crazy-chess", tags=["crazy-chess"])
 
+from pydantic import BaseModel
+
+class NewGameRequest(BaseModel):
+    rows: int
+    columns: int
+    num_effects: int
+    effects: list[str]
+
 
 @router.post("/new-game")
-async def new_game(effects: list[str] = Form(...),rows: int = Form(...),columns: int = Form(...), num_effects: int = Form(...), db_session: AsyncSession = Depends(get_db_session)):
+async def new_game(payload: NewGameRequest, db_session: AsyncSession = Depends(get_db_session)):
 
-    board = create_board(rows, columns)
-    new_game = Game(board_state=board, effects=effects, num_effects=num_effects)
+    print('SUCCESSFULLY RECEIVED NEW GAME REQUEST')
+    board = create_board(payload.rows, payload.columns)
+    new_game = Game(board_state=board, effects=payload.effects, num_effects=payload.num_effects)
     db_session.add(new_game)
     await db_session.commit()
     await db_session.refresh(new_game)
 
-    return {"game_id": new_game.id, "board_state": new_game.board_state, "effects": await get_random_effects(db_session, new_game.id, num_effects)}
+    return {"game_id": new_game.id, "board_state": new_game.board_state, "effects": await get_random_effects(db_session, new_game.id, payload.num_effects)}
 
 @router.get("/get-effects")
 async def get_effects(game_id: int = Query(...), db_session: AsyncSession = Depends(get_db_session)):
