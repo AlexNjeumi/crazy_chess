@@ -1,5 +1,5 @@
 import random
-from select import select   
+from sqlalchemy import select   
 
 EFFECTS = [
     "Shield",

@@ -29,7 +29,7 @@ async def new_game(payload: NewGameRequest, db_session: AsyncSession = Depends(g
 
     print('SUCCESSFULLY RECEIVED NEW GAME REQUEST')
     board = create_board(payload.rows, payload.columns)
-    new_game = Game(board_state=board, effects=payload.effects, num_effects=payload.num_effects)
+    new_game = Game(board_state=board, effects='$'.join(payload.effects), num_effects=payload.num_effects)
     db_session.add(new_game)
     await db_session.commit()
     await db_session.refresh(new_game)
